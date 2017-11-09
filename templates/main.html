@@ -1,0 +1,968 @@
+<!-- API Key: AIzaSyCJ5WBMO5HtCfyHWB-XC-fwNHl0fg1HYzY -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>AppTribution | An App for Attribution Using Google Street View</title>
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="{{url_for('static',filename='css/materialize.css')}}?q=1280549780"  media="screen,projection"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+        width: 80%;
+        float: left;
+      }
+
+      #content-window {
+        float: left;
+        font-family: 'Roboto','sans-serif';
+        height: 100%;
+        line-height: 30px;
+        width: 20%;
+      }
+
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 80px;
+        left: 21%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+
+      .container{
+        width:100%;
+        padding: 20px;
+      }
+
+      .row{
+        padding-left: 10px;
+      }
+
+      .input-field.col > label{
+        left:0rem;
+      }
+
+      /* label focus color */
+      .input-field input[type=text]:focus + label {
+        color: #039be5;
+      }
+      /* label underline focus color */
+      .input-field input[type=text]:focus {
+        border-bottom: 1px solid #039be5!important;
+        box-shadow: 0 1px 0 0 transparent;
+      }
+
+      .input-field textarea[class=materialize-textarea]:focus {
+      border-bottom: 1px solid #000;
+      box-shadow: 0 1px 0 0 #000;
+      }
+      
+      ul.dropdown-content.select-dropdown li span {
+       color: #039be5; /* no need for !important :) */
+      }
+
+      .thumb{
+        margin-left:-12px!important;
+        padding:0px!important;
+      }
+
+      .card-fab-wrapper{
+
+        position:relative!important; 
+        height: 70px!important;
+        text-align: right;
+        padding:0px!important;
+      }
+
+      .card-fab{
+        
+        position:absolute!important;
+      
+      }
+
+
+      #floating-breakdown{
+        position:absolute;
+         top:0;
+         right:0;
+        z-index: 3;
+        background-color: black;
+        opacity: 0.6;
+        border-bottom-left-radius: 20px;
+      }
+
+      /*thanks kevin*/
+      #floating-breakdown>p{
+        padding-right:10px; 
+        padding-left:10px; 
+        color:white;    
+        /*text-shadow: 2px 2px blac;*/
+      }
+
+      #count_update_markers{
+        
+      }
+
+      /*#floating-panel {
+        margin-left: -100px;
+      }*/
+    </style>
+  </head>
+  <body>
+    <div id="floating-breakdown">
+        <p><span id="count_update_markers" title="Updated"></span> / <span id="count_displayed_markers" title="Displayed"></span> / <span id="count_total_markers"  title="Total Markers"></span></p>
+    </div>
+    <div id="content-window">
+
+      <nav>
+        <div class="nav-wrapper light-blue darken-4">
+
+
+
+          <a href="/" class="brand-logo">&nbsp;&nbsp;AppTribution</a>
+        </div>
+      </nav>  
+
+      <div class="container">
+        <div class="row">
+          <h5 id="project_name">{{ project_name }}</h5>
+          
+        </div>
+        <div id="forms">
+        <div class="row">
+          <p id="fid">Feature ID: 22</p>
+        </div>
+        <div class="input-field col s12">
+          <select id="bldg_type">
+            <option value="RS">Residential</option>
+            <option value="SC">School</option>
+            <option value="MK">Market/Prominent Stores</option>
+            <option value="AG">Agricultural &amp; Agro Industrial</option>
+            <option value="MI">Medical Institutions</option>
+            <option value="BH">Barangay Hall</option>
+            <option value="ML">Military Institution</option>
+            <option value="SP">Sports Center/Gymnasium/Covered Court</option>
+            <option value="TC">Telecommunication Facilities</option>
+            <option value="TR">Transport Terminal (Road,Rail, Air, and Marine)</option>
+            <option value="WH">Warehouse</option>
+            <option value="PP">Powerplant/Substation</option>
+            <option value="NG">NGS/CSO Offices</option>
+            <option value="PO">Police Station</option>
+            <option value="WT">Water Supply/Storage</option>
+            <option value="RL">Religious Institutions</option>
+            <option value="BN">Bank</option>
+            <option value="FC">Factory</option>
+            <option value="GS">Gas Station</option>
+            <option value="FR">Fire Station</option>
+            <option value="OG">Other Government Offices</option>
+            <option value="OC">Other Commercial Establishments</option>
+      
+          </select>
+          <label>Building Type</label>
+        </div>
+
+
+        <br />
+        <div class="input-field col s6">
+          <input placeholder="i.e. Tindahan Ni Aling Nena" id="bldg_name" type="text">
+          <label for="bldg_name">Building Name</label>
+        </div>
+
+       <!-- <a id="save" data-featureid="0" class="btn-floating btn-large waves-effect waves-light green right"><i class="material-icons">save</i></a> -->
+
+        <div class="col s12 m12 l12 card-fab-wrapper" >
+
+
+          <div class="fixed-action-btn horizontal card-fab" >
+            <a id="save" data-featureid="0" class="btn-floating btn-large green" title="Save Edits">
+            <i class="large material-icons">save</i>
+            </a>
+            <ul>
+            
+            <li>
+              <a id="mark-nonbuilding" class="delete-project btn-floating red darken-1" data-featureid="0" title="Mark as Non-Building"><i class="material-icons">nature_people</i></a>
+            </li>
+            <li>
+              <a id="mark-unreachable" class="export-project btn-floating orange darken-3" data-featureid="0" title="Mark as Unreachable"><i class="material-icons">directions_run</i></a>
+            </li></a>
+
+            <li>
+              <a id="bookmark" class="delete-project btn-floating purple lighten-3" data-featureid="0" title="Bookmark"><i class="material-icons">star</i></a>
+            </li>
+
+          </ul>
+          </div> 
+        </div>
+        
+        
+
+        <p>Visible Features:</p>
+        <div id="visible-features" class="col s12 m12 l12"></div>
+
+        <p>Marked Features:</p>
+        <div id="marked-features" class="col s12 m12 l12">
+          
+
+        </div>
+
+        <form action="#">
+          <p>View Radius</p>
+          <p class="range-field">
+            <input type="range" id="radius_slider" min="20" max="50" value="50" step="10"/>
+          </p>
+        </form>
+
+      </div><!-- End of forms -->
+
+      
+
+      </div>
+        
+    </div>
+   <!--  <div id="floating-panel">
+      <input type="button" value="Toggle Street View" onclick="toggleStreetView();"></input>
+    </div> -->
+    <div id="map"></div>
+    
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="{{url_for('static',filename='js/materialize.min.js')}}?q=1280549780"></script>
+
+    <script>
+
+      $(document).ready(function() {
+
+
+        // $("#radius_slider").ionRangeSlider();
+        // 
+        
+       //  function visibleFeaturesEvent() {
+       //    $(".vf").click(function(){
+       //      console.log($(this).attr('id'));
+       //    });
+       // }
+
+        function updateVisibleFeature(idx, status){
+          if ($("#vf-" + idx).length != 0) {
+            $("#vf-" + idx).removeClass().addClass("vf-focus");
+            if (status == 1){
+              $("#vf-" + idx).addClass("chip green")
+            }else if (status == 2){
+              $("#vf-" + idx).addClass("chip orange darken-3")
+            }else if (status == 3){
+              $("#vf-" + idx).addClass("chip red darken-1")
+            }else if (status == 4){
+              $("#vf-" + idx).addClass("chip purple lighten-3")
+            }
+            // visibleFeaturesEvent();
+          }
+        }
+
+
+        $('select').material_select();
+        
+        $("#save").click(function(event) {
+          /* Act on the event */
+          // console.log($("#save").data("featureid"));
+          // console.log($("#bldg_name").val());
+          // console.log($("#bldg_type").val());
+
+          id = $("#save").data("featureid");
+          index = $("#save").data("index");
+          bldg_name =  $("#bldg_name").val();
+          bldg_type =  $("#bldg_type").val();
+          
+          /* AJAX */
+          $.ajax({
+            url: '/update_feature',
+            type: 'POST',
+            dataType: 'json',
+            data: {"id": id,"bldg_name":bldg_name,"bldg_type":bldg_type,"status":1}
+          })
+          .done(function() {
+
+            // Update local variable to reduce server calls
+            console.log("success");
+            // Alertify successful update
+
+            if (markers[index].status == 0 || markers[index].status == 4){
+              count_updated_markers++;
+              $("#count_update_markers").html(count_updated_markers);
+            }
+
+            // Update local variable
+            features[index].bldg_type = bldg_type
+            features[index].bldg_name = bldg_name
+
+            // Update marker
+
+            markers[index].setIcon('https://www.dropbox.com/s/ysxmjvsiwjhx7m7/icon-green.png?dl=1');
+            markers[index].status = 1
+            // deleteVisibleFeatures();
+            updateVisibleFeature(markers[index].label, 1);
+
+            
+
+            Materialize.toast('Feature successfully updated.', 4000,'green lighten-1')
+
+            if ($("#mf-" + markers[index].label).length != 0){
+              $("#mf-" + markers[index].label).remove();
+            }
+          })
+          .fail(function() {
+            // console.log("error");
+          });
+           });
+
+          $("#mark-unreachable").click(function(event){
+
+          id = $("#save").data("featureid");
+          index = $("#save").data("index");
+          bldg_name =  $("#bldg_name").val();
+          bldg_type =  $("#bldg_type").val();
+          
+          /* AJAX */
+          $.ajax({
+            url: '/update_feature',
+            type: 'POST',
+            dataType: 'json',
+            data: {"id": id,"bldg_name":bldg_name,"bldg_type":bldg_type,"status":2}
+          })
+          .done(function() {
+
+            if (markers[index].status == 0 || markers[index].status == 4){
+              count_updated_markers++;
+              $("#count_update_markers").html(count_updated_markers);
+            }
+
+            // Update local variable to reduce server calls
+            console.log("success");
+            // Alertify successful update
+            // Update local variable
+            features[index].bldg_type = bldg_type
+            features[index].bldg_name = bldg_name
+
+            // Update marker
+            markers[index].setIcon('https://www.dropbox.com/s/4f5xu6mjkzizcuu/icon-orange.png?dl=1');
+            markers[index].status = 2
+            updateVisibleFeature(markers[index].label, 2);
+            Materialize.toast('Feature marked as Unreachable.', 4000,'orange darken-3')
+
+            if ($("#mf-" + markers[index].label).length != 0){
+              $("#mf-" + markers[index].label).remove();
+            }
+          })
+          .fail(function() {
+            // console.log("error");
+          })
+          });
+
+          $("#mark-nonbuilding").click(function(event) {
+
+          id = $("#save").data("featureid");
+          index = $("#save").data("index");
+          bldg_name =  $("#bldg_name").val();
+          bldg_type =  $("#bldg_type").val();
+          
+          /* AJAX */
+          $.ajax({
+            url: '/update_feature',
+            type: 'POST',
+            dataType: 'json',
+            data: {"id": id,"bldg_name":bldg_name,"bldg_type":bldg_type,"status":3}
+          })
+          .done(function() {
+
+            if (markers[index].status == 0 || markers[index].status == 4){
+              count_updated_markers++;
+              $("#count_update_markers").html(count_updated_markers);
+            }
+
+            // Update local variable to reduce server calls
+            console.log("success");
+            // Alertify successful update
+            // Update local variable
+            features[index].bldg_type = bldg_type
+            features[index].bldg_name = bldg_name
+
+            // Update marker
+            markers[index].setIcon('https://www.dropbox.com/s/2w6wbwmzg7cz0we/icon-red.png?dl=1');
+            markers[index].status = 3
+            updateVisibleFeature(markers[index].label, 3);
+            Materialize.toast('Feature marked as Non-Building.', 4000,'red darken-1')
+
+            if ($("#mf-" + markers[index].label).length != 0){
+              $("#mf-" + markers[index].label).remove();
+            }
+          })
+          .fail(function() {
+            // console.log("error");
+          });
+        });
+
+          $("#bookmark").click(function(event) {
+
+          id = $("#save").data("featureid");
+          index = $("#save").data("index");
+          bldg_name =  $("#bldg_name").val();
+          bldg_type =  $("#bldg_type").val();
+          
+          /* AJAX */
+          $.ajax({
+            url: '/update_feature',
+            type: 'POST',
+            dataType: 'json',
+            data: {"id": id,"bldg_name":bldg_name,"bldg_type":bldg_type,"status":4}
+          })
+          .done(function() {
+
+            if (markers[index].status != 0){
+              count_updated_markers--;
+              $("#count_update_markers").html(count_updated_markers);
+            }
+
+            // Update local variable to reduce server calls
+            console.log("success");
+            // Alertify successful update
+            // Update local variable
+            features[index].bldg_type = bldg_type
+            features[index].bldg_name = bldg_name
+
+            // Update marker
+            markers[index].setIcon('https://www.dropbox.com/s/tq10kbi4h4evjv2/icon-lilac.png?dl=1');
+            markers[index].status = 4;
+            updateVisibleFeature(markers[index].label, 4);
+            Materialize.toast('Feature marked as Non-Building.', 4000,'purple lighten-3');
+
+            if ($("#mf-" + markers[index].label).length == 0){
+              $("#marked-features").append('<div id=mf-' + markers[index].label + ' name="'+ markers[index].index +'" class="chip purple lighten-3">' + markers[index].label +'</div>');
+              markedFeaturesEvent("#mf-"+ markers[index].label, markers[index].index);
+            }
+          })
+          .fail(function() {
+            // console.log("error");
+          });
+        });
+
+        $("#forms").hide();
+      });
+
+      function markedFeaturesEvent(id, idx){
+        
+        $(id).click(function(){
+          // console.log($(id).html());
+          if (panorama.getVisible() == false) {
+            map.setCenter(markers[idx].position);
+          }
+          google.maps.event.trigger(markers[idx], 'click');
+        });
+      }
+            
+
+
+      // var panorama;
+
+      function initMap() {
+
+
+        var center = {lat: 13.130713, lng: 120.709097 };
+        // var center = {lat: 14.164883, lng: 121.242549 };
+
+        // Set up the map
+        map = new google.maps.Map(document.getElementById('map'), {
+          center: center,
+          zoom: 18,
+          streetViewControl: true
+        });
+
+        // var ctaLayer = new google.maps.KmlLayer({
+        //   url: 'https://www.dropbox.com/s/cw9stkbf4rhj5c1/Pagbahan_KML.kml?dl=1',
+        //   map: map
+        // });
+
+        function showInContentWindow(text) {
+          var sidediv = document.getElementById('content-window');
+          sidediv.innerHTML = text;
+        }
+
+        var pinIcon = new google.maps.MarkerImage(
+        "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=%E2%80%A2|FFFF00",
+        null, /* size is determined at runtime */
+        null, /* origin is 0,0 */
+        null, /* anchor is bottom center of the scaled image */
+        new google.maps.Size(62, 88)
+        );  
+
+
+        features2 = {{ features|tojson  }}
+        features = JSON.parse(features2);
+        markers = new Array(features.length);
+        count_markers = 0;
+        count_updated_markers = 0;
+        $("#count_total_markers").html(features.length);
+        // console.log(features);
+      
+       
+       // Marker initialization 
+      var streetViewService = new google.maps.StreetViewService();
+      var STREETVIEW_MAX_DISTANCE = 50;
+      var first_marker_flag = false;
+       for(var i=0; i<features.length; i++){
+          // console.log(features[i].id)
+
+          // //TESTTESTTEST-------------------------------------
+          // if (features[i].status == 0)
+          //   icon = 'https://www.dropbox.com/s/s3e1ev7tmin4w81/icon-yellow.png?dl=1';
+          // else if (features[i].status == 1)
+          //   icon = 'https://www.dropbox.com/s/ysxmjvsiwjhx7m7/icon-green.png?dl=1';
+          // else if (features[i].status == 2)
+          //   icon = 'https://www.dropbox.com/s/4f5xu6mjkzizcuu/icon-orange.png?dl=1';
+          // else
+          //   icon = 'https://www.dropbox.com/s/2w6wbwmzg7cz0we/icon-red.png?dl=1';
+
+          // var marker = new google.maps.Marker({
+          //   position: {lat: parseFloat(features[i].lat), lng: parseFloat(features[i].long) },
+          //   label: features[i].feature_id,
+          //   map: map,
+          //   icon: icon,
+          //   title: 'Feature '+features[i].feature_id,
+          //   feature_id: features[i].feature_id,
+          //   id: features[i].id,
+          //   bldg_type: features[i].bldg_type,
+          //   bldg_name: features[i].bldg_name,
+          //   status: features[i].status,
+          //   index: i
+          // });
+
+          // marker.addListener('click', function(kmlEvent) {
+          //   // alert("This is marker "+this.id);
+
+          //   console.log(features[this.index].bldg_type);
+          //   console.log(features[this.index].bldg_name);
+
+          //   // console.log(this.bldg_type);
+          //   // console.log(this.bldg_name);
+
+          //   Materialize.toast('Feature '+this.feature_id+' is Selected.', 4000,'gray lighten-1')
+
+
+          //   $("#fid").html("Feature ID: "+this.feature_id);
+          //   // console.log($("#bldg_type").val());
+          //   $("#bldg_type").val(features[this.index].bldg_type);
+          //   $('#bldg_type').material_select();
+          //   $("#bldg_name").val(features[this.index].bldg_name);
+
+
+          //   // Access db using ID not feature id
+          //   // $("#save").data('featureid', features[this.index].id);
+          //   $("#save").data('featureid', features[this.index].id);
+          //   $("#mark-nonbuilding").data('featureid', features[this.index].id);
+          //   $("#mark-unreachable").data('featureid', features[this.index].id);
+          //   $("#save").data('index', this.index);
+
+
+
+          //   $("#forms").show();
+
+          // });
+
+          // markers.push(marker);
+
+          //  // Re-center map
+          //  console.log("ID: " + marker.label);
+          //  checkMarker(marker, streetViewService ,STREETVIEW_MAX_DISTANCE);
+          //  //TESTTESTTEST-------------------------------------
+          // var latLng = new google.maps.LatLng(parseFloat(features[i].lat), parseFloat(features[i].long));
+          checkMarker(features[i], i);
+
+        }
+
+        function checkMarker(feature, idx){
+          var latLng = new google.maps.LatLng(parseFloat(feature.lat), parseFloat(feature.long));
+          streetViewService.getPanoramaByLocation(latLng, STREETVIEW_MAX_DISTANCE, function (streetViewPanoramaData, status) {
+                if (status === google.maps.StreetViewStatus.OK) {
+                    // ok
+                    // //TESTTESTTEST-------------------------------------
+                    if (feature.status == 0)
+                      icon = 'https://www.dropbox.com/s/s3e1ev7tmin4w81/icon-yellow.png?dl=1';
+                    else if (feature.status == 1)
+                      icon = 'https://www.dropbox.com/s/ysxmjvsiwjhx7m7/icon-green.png?dl=1';
+                    else if (feature.status == 2)
+                      icon = 'https://www.dropbox.com/s/4f5xu6mjkzizcuu/icon-orange.png?dl=1';
+                    else if (feature.status == 3)
+                      icon = 'https://www.dropbox.com/s/2w6wbwmzg7cz0we/icon-red.png?dl=1';
+                    else if (feature.status == 4)
+                      icon = 'https://www.dropbox.com/s/tq10kbi4h4evjv2/icon-lilac.png?dl=1';
+
+                    var marker = new google.maps.Marker({
+                      position: {lat: parseFloat(feature.lat), lng: parseFloat(feature.long) },
+                      label: feature.feature_id,
+                      map: map,
+                      icon: icon,
+                      title: 'Feature '+feature.feature_id,
+                      feature_id: feature.feature_id,
+                      id: feature.id,
+                      bldg_type: feature.bldg_type,
+                      bldg_name: feature.bldg_name,
+                      status: feature.status,
+                      index: idx
+                    });
+
+                    count_markers++;
+                    $("#count_displayed_markers").html(count_markers);
+
+                    if (feature.status != 0 && feature.status != 4){
+                      count_updated_markers++;
+                      $("#count_update_markers").html(count_updated_markers);
+                    }
+
+                    marker.addListener('click', function(kmlEvent) {
+                      // alert("This is marker "+this.id);
+
+                      console.log(feature.bldg_type);
+                      console.log(feature.bldg_name);
+
+                      // console.log(this.bldg_type);
+                      // console.log(this.bldg_name);
+
+                      Materialize.toast('Feature '+this.feature_id+' is Selected.', 4000,'gray lighten-1')
+
+
+                      $("#fid").html("Feature ID: "+this.feature_id);
+                      // console.log($("#bldg_type").val());
+                      $("#bldg_type").val(feature.bldg_type);
+                      $('#bldg_type').material_select();
+                      $("#bldg_name").val(feature.bldg_name);
+
+
+                      // Access db using ID not feature id
+                      // $("#save").data('featureid', features[this.index].id);
+                      $("#save").data('featureid', feature.id);
+                      $("#mark-nonbuilding").data('featureid', feature.id);
+                      $("#mark-unreachable").data('featureid', feature.id);
+                      $("#save").data('index', this.index);
+
+
+
+                      $("#forms").show();
+
+                    });
+
+                    // markers.push(marker);
+                    markers[idx] = marker;
+                    console.log("YEP " + feature.feature_id);
+
+                    if (marker.status == 4){
+                      $("#marked-features").append('<div id=mf-' + marker.label + ' name="'+ marker.index +'" class="chip purple lighten-3">' + marker.label +'</div>');
+                      markedFeaturesEvent("#mf-"+ marker.label, marker.index);
+                    }
+
+                    if (first_marker_flag == false){
+                      first_marker_flag = true;
+                      var latLng2 = marker.getPosition();
+                      map.setCenter(latLng2); // setCenter takes a LatLng object
+                      panorama.setPosition(latLng2);
+                      google.maps.event.trigger(marker, 'click');
+                    }
+
+                } else {
+                    // no street view available in this range, or some error occurred
+                    // marker.setVisible(false);
+                    console.log("NOPE " + feature.feature_id);
+                    // markers.push(null);
+                    markers[idx] = null;
+                }
+            });
+        }
+
+        // function checkMarker(marker, streetViewService, STREETVIEW_MAX_DISTANCE){
+        //   streetViewService.getPanoramaByLocation(marker.position, STREETVIEW_MAX_DISTANCE, function (streetViewPanoramaData, status) {
+        //         if (status === google.maps.StreetViewStatus.OK) {
+        //             // ok
+        //             console.log("KITA " + marker.label);
+        //         } else {
+        //             // no street view available in this range, or some error occurred
+        //             marker.setVisible(false);
+        //             console.log("NOPE " + marker.label);
+        //         }
+        //     });
+        // }
+
+        // function removeFarMarkers(){
+        //   console.log("REMOVE MARKERS INITIATED");
+        //   var streetViewService = new google.maps.StreetViewService();
+        //   var STREETVIEW_MAX_DISTANCE = 50;
+        //   for (var m in markers){
+        //     // markers[m].position
+        //     // var latLng = new google.maps.LatLng(40.7140, -74.0062);
+        //     streetViewService.getPanoramaByLocation(markers[m].position, STREETVIEW_MAX_DISTANCE, function (streetViewPanoramaData, status) {
+        //         if (status === google.maps.StreetViewStatus.OK) {
+        //             // ok
+        //             console.log("kita" + markers[m].label);
+        //         } else {
+        //             // no street view available in this range, or some error occurred
+        //             markers[m].setVisible(false);
+        //         }
+        //     });
+        //   }
+          
+        // }
+
+        // removeFarMarkers();
+
+        // setTimeout(function(){
+        //    var latLng = markers[0].getPosition();
+        //     map.setCenter(latLng); // setCenter takes a LatLng object
+            
+        //     google.maps.event.trigger(markers[0], 'click');
+        //   console.log("MarkerNum " + markers.length);
+        //   console.log("FeatureNum " + features.length);
+        // },0)
+        
+       
+
+        function changeRadius(val){
+          if (panorama.getVisible()){
+            setAllMap(null);
+          }
+          bilog.setRadius(val);
+          markersInCircle();
+        }
+
+        function showVisibleFeature(marker){
+          var domstring = "";
+          if (marker.status == 0){    //yellow
+            domstring = '<div id=vf-' + marker.label + ' name="'+ marker.index + '" class="chip yellow darken-1">' + marker.label +'</div>';
+          }else if(marker.status == 1){ //green
+            domstring = '<div id=vf-' + marker.label + ' name="'+ marker.index + '" class="chip green">' + marker.label +'</div>';
+          }else if(marker.status == 2){  //orange
+            domstring = '<div id=vf-' + marker.label + ' name="'+ marker.index + '" class="chip orange darken-3">' + marker.label +'</div>';
+          }else if(marker.status == 3){                      //red
+            domstring = '<div id=vf-' + marker.label + ' name="'+ marker.index + '" class="chip red darken-1">' + marker.label +'</div>';
+          }else{
+            domstring = '<div id=vf-' + marker.label + ' name="'+ marker.index + '" class="chip purple lighten-3">' + marker.label +'</div>';
+          }
+          $("#visible-features").append(domstring);
+          visibleFeaturesEvent("#vf-"+ marker.label, marker.index);
+        }
+
+        function deleteVisibleFeatures(){
+          $("#visible-features>div").remove();
+        }
+
+        function markersInCircle(){
+          deleteVisibleFeatures();
+          for (var m in markers){
+            if (markers[m] != null){
+              if(bilog.contains( markers[m].position )){
+                console.log(markers[m].label);
+                showVisibleFeature(markers[m]);
+                markers[m].setMap(map);
+              }
+            }
+          }
+        }
+
+        function hideOverlays(){
+          pegman_marker.setVisible(!pegman_marker.getVisible())
+          bilog.setVisible(!bilog.getVisible())
+          for (var m in markers){
+            if (markers[m] != null){
+              markers[m].setVisible(!markers[m].getVisible())
+            }
+          }
+        }
+        
+        $("#radius_slider").on("change", function(){
+          changeRadius(parseInt(this.value));
+        });
+
+        $(document).on('keydown', function ( e ) {
+            // You may replace `c` with whatever key you want
+            if ((e.metaKey || e.altKey) && ( String.fromCharCode(e.which).toLowerCase() === 'q') ) {
+                // console.log( "You pressed ALT+q" );
+                if ($("#radius_slider").val() != 20 ){
+                  $("#radius_slider").val(parseInt($("#radius_slider").val())-10);
+                  changeRadius(parseInt($("#radius_slider").val()));
+                }
+            }else if ((e.metaKey || e.altKey) && ( String.fromCharCode(e.which).toLowerCase() === 'w') ) {
+                // console.log( "You pressed ALT+w" );
+                if ($("#radius_slider").val() != 50 ){
+                  $("#radius_slider").val(parseInt($("#radius_slider").val())+10);
+                  changeRadius(parseInt($("#radius_slider").val()));
+                }
+            }else if ((e.metaKey || e.altKey) && ( String.fromCharCode(e.which).toLowerCase() === 's') ) {
+                // console.log( "You pressed ALT+s" );
+                $("#save").click();
+            }else if ((e.metaKey || e.altKey) && ( String.fromCharCode(e.which).toLowerCase() === 'z') ) {
+                $("#mark-unreachable").click();
+            }else if ((e.metaKey || e.altKey) && ( String.fromCharCode(e.which).toLowerCase() === 'x') ) {
+                $("#mark-nonbuilding").click();
+            }else if ((e.metaKey || e.altKey) && ( String.fromCharCode(e.which).toLowerCase() === 'a') ) {
+                $("#bookmark").click();
+            }else if ((e.metaKey || e.altKey) && ( String.fromCharCode(e.which).toLowerCase() === 'c') ) {
+              if (panorama.getVisible() && $("#visible-features>div").length != 0){
+                // console.log("alt-c");
+                if ($(".vf-focus").length == 0){
+                  $("#visible-features>div")[0].click();
+                }else if ($(".vf-focus").next().length != 0){
+                  $(".vf-focus").next().click();
+                }else{
+                  $("#visible-features>div")[0].click();
+                }
+              }
+            }else if ((e.metaKey || e.altKey) && ( String.fromCharCode(e.which).toLowerCase() === 'v') ) {
+              if (panorama.getVisible() && $("#visible-features>div").not($("#visible-features>div.green")).length != 0){
+                // console.log("alt-c");
+                if ($(".vf-focus").length == 0){
+                  $("#visible-features>div").not($("#visible-features>div.green"))[0].click();
+                }else if ($(".vf-focus").nextAll().not($(".green")).length != 0){
+                  $(".vf-focus").nextAll().not($(".green"))[0].click();
+                }else{
+                  $("#visible-features>div").not($("#visible-features>div.green"))[0].click();
+                }
+              }else if(panorama.getVisible() == false){
+                for (var i = 0; i < markers.length; i++) {
+                  if (markers[i] != null && markers[i].status == 0){
+                    google.maps.event.trigger(markers[i], 'click');
+                    map.setCenter(markers[i].position)
+                    break
+                  }
+                }
+              }
+            }else if ((e.metaKey || e.altKey) && ( String.fromCharCode(e.which).toLowerCase() === '1') ) {
+              if (panorama.getVisible()){
+                panorama.setVisible(false);
+                map.setCenter(pegman_marker.position);
+              }else{
+                panorama.setVisible(true);
+              }
+            }else if ((e.metaKey || e.altKey) && ( String.fromCharCode(e.which).toLowerCase() === '2') ) {
+              if (!panorama.getVisible()){
+                hideOverlays();
+              }
+            }
+        });
+       
+        function setAllMap(map1) {
+          for (var i = 0; i < markers.length; i++) {
+            if (markers[i] != null){
+              markers[i].setMap(map1);
+            }
+          }
+        }
+
+        google.maps.Circle.prototype.contains = function(latLng) {
+          return this.getBounds().contains(latLng) && google.maps.geometry.spherical.computeDistanceBetween(this.getCenter(), latLng) <= this.getRadius();
+        };
+
+        bilog = new google.maps.Circle({
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#FF0000',
+            fillOpacity: 0.35,
+            map: map,
+            center: center,
+            radius: 50
+          });
+        // bilog.setVisible(false);
+
+
+        pegman_marker = new google.maps.Marker({
+            position: center,
+            map: null,
+            icon: 'https://www.dropbox.com/s/tucjstw25lo4tix/pegman.png?dl=1'
+          });
+
+        panorama = map.getStreetView();
+
+        google.maps.event.addListener(panorama, 'visible_changed', function() {
+
+        // If street view was just activated
+        if (this.getVisible()) {
+          console.log("");
+          console.log('BOOMBOOMBOOM')
+          
+          setAllMap(null);
+          pegman_marker.setPosition(this.getPosition());
+          pegman_marker.setMap(null);
+          
+          setTimeout(function(){
+            bilog.setCenter(panorama.getPosition());
+            markersInCircle();
+          },50)
+          // markersInCircle();
+
+        }else{
+          console.log("");
+          console.log('BAMBAMBAM')
+          setAllMap(map);
+          bilog.setCenter(this.getPosition());
+          pegman_marker.setPosition(this.getPosition());
+          pegman_marker.setMap(map);
+        } 
+
+      });
+
+        function visibleFeaturesEvent(id, idx) {
+          $(id).click(function(){
+
+            $(".vf-focus").removeClass("vf-focus");
+            $(id).addClass("vf-focus");
+
+            var marker_id = idx;
+            console.log(marker_id +" " + markers[marker_id].label);
+            google.maps.event.trigger(markers[marker_id], 'click');
+
+            if (panorama.getVisible()){
+              var service = new google.maps.StreetViewService;
+              // call the "getPanoramaByLocation" function of the Streetview Services to return the closest streetview position for the entered coordinates
+              service.getPanoramaByLocation(panorama.getPosition(), 50, function(panoData) {
+                // if the function returned a result
+                if (panoData != null) {
+                  // the GPS coordinates of the streetview camera position
+                  var panoCenter = panoData.location.latLng;
+                  // this is where the magic happens!
+                  // the "computeHeading" function calculates the heading with the two GPS coordinates entered as parameters
+                  var heading = google.maps.geometry.spherical.computeHeading(panoCenter, markers[marker_id].position);
+                  // now we know the heading (camera direction, elevation, zoom, etc) set this as parameters to the panorama object
+                  var pov = panorama.getPov();
+                  pov.heading = heading;
+                  panorama.setPov(pov);
+                } else {
+                  // no streetview found :(
+                  alert('not found'); 
+                }
+              });
+            }else{
+              console.log("labas")
+            }
+          });
+       }
+
+      }// End of initmap()
+
+
+    </script>
+    <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCJ5WBMO5HtCfyHWB-XC-fwNHl0fg1HYzY&callback=initMap">
+    </script>
+  </body>
+</html>
+

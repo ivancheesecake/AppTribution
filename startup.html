@@ -1,0 +1,138 @@
+<!-- API Key: AIzaSyCJ5WBMO5HtCfyHWB-XC-fwNHl0fg1HYzY -->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>AppTribution | An App for Attribution Using Google Street View</title>
+    <link href="http://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="{{url_for('static',filename='css/style.css')}}?q=1280549780" rel="stylesheet">
+    <link type="text/css" rel="stylesheet" href="css/materialize.min.css"  media="screen,projection"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  </head>
+  <body>
+    <header>
+
+      <nav>
+        <div class="nav-wrapper light-blue darken-4">
+          <a href="#" class="brand-logo">&nbsp;&nbsp;AppTribution</a>
+        </div>
+      </nav>  
+        
+    </header>
+    <main>
+      <div class="row">
+        <div class="col s3 m3 l3 center-align" id="left">
+          <img id="icon-big" class="responsive-img center-align" src="img/appicon-circle.png" />
+          <h5>Create New Attribution Project</h5>
+          <br />
+
+          <div class="input-field col s12">
+            <input placeholder="i.e. SanCristobal_Blk12" id="proj_name" type="text">
+            <label for="proj_name">Project Name</label>
+          </div>
+
+          <div class="input-field col s12">
+            <select>
+              <optgroup label="Laguna">
+                <option value="Pagsanjan">Pagsanjan</option>
+                <option value="San Cristobal">San Cristobal</option>
+                <option value="Sta. Cruz">Sta. Cruz</option>
+              </optgroup>
+              <optgroup label="Occidental Mindoro">
+                <option value="Abra de Ilog">Abra de Ilog</option>
+                <option value="Amnay">Amnay</option>
+                <option value="Anahawin">Anahawin</option>
+                <option value="Caguray">Caguray</option>
+                <option value="Ibod">Ibod</option>
+                <option value="Labangan">Labangan</option>
+                <option value="Lunintao">Lunintao</option>
+                <option value="Magbando">Magbando</option>
+                <option value="Mamburao">Mamburao</option>
+                <option value="Monpong">Monpong</option>
+                <option value="Pagbahan">Pagbahan</option>
+                <option value="Pola">Pola</option>
+              </optgroup>
+              <optgroup label="Oriental Mindoro">
+                <option value="Agsalin">Agsalin</option>
+                <option value="Bansud">Bansud</option>
+                <option value="Baroc">Baroc</option>
+                <option value="Ibod">Ibod</option>
+                <option value="Bongabong">Bongabong</option>
+                <option value="Bulalacao">Bulalacao</option>
+                <option value="Butas">Butas</option>
+                <option value="Casiligan">Casiligan</option>
+                <option value="Sumagui">Sumagui</option>
+              </optgroup>
+              <optgroup label="Marinduque">
+                <option value="Boac">Boac</option>
+                <option value="Tawiran Tagum">Tawiran Tagum</option>
+              </optgroup>
+              <optgroup label="Palawan">
+                <option value="Abongan">Abongan</option>
+                <option value="Aborlan">Aborlan</option>
+                <option value="Babuyan">Babuyan</option>
+                <option value="Bacungan">Bacungan</option>
+                <option value="Batang Batang">Batang Batang</option>
+                <option value="Caramay">Caramay</option>
+                <option value="Ilog Ilog">Ilog Ilog</option>
+                <option value="Inagauan">Inagauan</option>
+                <option value="Iraan">Iraan</option>
+                <option value="Iwahig">Iwahig</option>
+                <option value="Iwahig Brookes">Iwahig Brookes</option>
+                <option value="Iwahig Penal">Iwahig Penal</option>
+                <option value="Langogan">Langogan</option>
+                <option value="Malambunga">Malambunga</option>
+                <option value="Malasgao">Malasgao</option>
+                <option value="Okayan">Okayan</option>
+                <option value="Panitian">Panitian</option>
+                <option value="Pulot">Pulot</option>
+                <option value="Ransang">Ransang</option>
+                <option value="Tiga Plan">Tiga Plan</option>
+              </optgroup>
+
+
+            </select>
+            <label>River Basin</label>
+          </div>
+
+          <div class="input-field col s12">
+            <input placeholder="i.e. Uvuvwevwevwe Onyetenyevwe Ugwemuhwem Osas" id="in_charge" type="text">
+            <label for="proj_name">Person-in-Charge</label>
+          </div>
+
+          <a class="waves-effect waves-light green btn-large"><i class="material-icons left">create</i>create project</a>
+
+        </div>
+
+        <div class="col s9 m9 l9" id="right">
+          <div class="row">
+            <h3>Load Existing Project</h3>
+          </div>
+          <div class="row">
+            <h3>Load Existing Project</h3>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+    <footer class="page-footer light-blue darken-4">
+      <div class="footer-copyright">
+        <div class="container  center-align">
+          <a class="white-text text-lighten-3" href="">&copy;2017 University of the Philippines Los Baños Phil-LiDAR 1</a>
+        </div>
+      </div>
+    </footer>
+    
+    <script type="text/javascript" src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script type="text/javascript" src="js/materialize.min.js"></script>
+
+    <script type="text/javascript">
+      $(document).ready(function() {
+        $('select').material_select();
+      });
+          
+    </script>
+  </body>
+</html>
